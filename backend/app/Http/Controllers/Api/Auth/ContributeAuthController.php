@@ -38,6 +38,12 @@ class ContributeAuthController extends Controller
         }
 
         // Compte existant — vérifier le statut
+        if ($user->status === 'pending') {
+            return response()->json([
+                'message' => 'Votre compte n\'est pas encore activé. Veuillez vérifier votre boîte email pour activer votre compte.',
+            ], 403);
+        }
+
         if ($user->role === 'user' && $user->status !== 'active') {
             return response()->json([
                 'message' => 'Votre compte est suspendu ou banni.',
@@ -139,7 +145,7 @@ class ContributeAuthController extends Controller
         $verification->update(['used' => true]);
 
         if ($verification->type === 'account_verification') {
-            // Créer le compte
+            // Créer le compte (contribution rapide sans compte)
             $user = User::create([
                 'email'                  => $verification->email,
                 'pseudo'                 => User::generatePseudo(),
@@ -149,6 +155,15 @@ class ContributeAuthController extends Controller
                 'status'                 => 'active',
                 'registration_date'      => now(),
             ]);
+        } elseif ($verification->type === 'registration_verification') {
+            // Inscription classique — activer le compte
+            $user = User::where('email', $verification->email)->first();
+
+            if (!$user) {
+                return response()->json(['message' => 'Compte introuvable.'], 404);
+            }
+
+            $user->update(['status' => 'active']);
         } else {
             // magic_login — récupérer le compte existant
             $user = User::where('email', $verification->email)->first();

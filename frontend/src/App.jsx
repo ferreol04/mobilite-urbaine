@@ -12,6 +12,7 @@ import Inscription from './pages/public/Inscription';
 import ForgotPassword from './pages/public/ForgotPassword';
 import ResetPassword from './pages/public/ResetPassword';
 import Verify from './pages/public/Verify';
+import ConfirmDelete from './pages/public/ConfirmDelete';
 
 import Profil from './pages/user/Profil';
 import MesSignalements from './pages/user/MesSignalements';
@@ -39,6 +40,7 @@ export default function App() {
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/verify" element={<Verify />} />
+                        <Route path="/confirm-delete" element={<ConfirmDelete />} />
 
                         {/* Routes accessibles sans authentification (auth au moment de l'action) */}
                         <Route path="/signaler" element={<FormulaireSignalement />} />

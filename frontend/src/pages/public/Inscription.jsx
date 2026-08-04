@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useAuth from '../../hooks/useAuth';
 import api from '../../api/axios';
 
 const STEPS = ['Identité', 'Contact', 'Sécurité'];
@@ -37,7 +36,6 @@ function FieldError({ msg }) {
 }
 
 export default function Inscription() {
-    const { loginWithData } = useAuth();
     const navigate = useNavigate();
 
     const [step, setStep] = useState(0);
@@ -51,6 +49,7 @@ export default function Inscription() {
     const [showPwd, setShowPwd] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [verificationSent, setVerificationSent] = useState(false);
 
     function set(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
@@ -71,11 +70,11 @@ export default function Inscription() {
         const e = {};
         const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
         const phoneOk = /^\+?[\d\s\-()]{8,}$/.test(form.phone);
-        if (!form.email && !form.phone)
-            e.contact = 'Renseignez au moins un email ou un numéro de téléphone.';
-        else if (form.email && !emailOk)
+        if (!form.email.trim())
+            e.email = 'L\'adresse email est requise.';
+        else if (!emailOk)
             e.email = 'Adresse email invalide.';
-        else if (form.phone && !phoneOk)
+        if (form.phone && !phoneOk)
             e.phone = 'Numéro de téléphone invalide.';
         return e;
     }
@@ -109,14 +108,12 @@ export default function Inscription() {
                 gender:     form.gender,
                 password:   form.password,
                 password_confirmation: form.password_confirmation,
-                ...(form.email.trim() && { email: form.email.trim() }),
+                email: form.email.trim(),
                 ...(form.phone.trim() && { phone: form.phone.trim() }),
             };
 
-            const { data } = await api.post('/register', body);
-            // Register renvoie { user, token } — mise à jour directe du contexte sans rappel /login
-            loginWithData(data.user, data.token);
-            navigate('/', { replace: true });
+            await api.post('/register', body);
+            setVerificationSent(true);
         } catch (err) {
             console.error('Erreur inscription:', err.response ?? err);
             if (err.response?.status === 422) {
@@ -145,6 +142,41 @@ export default function Inscription() {
         `w-full px-4 py-2.5 rounded-lg bg-white/5 border text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
             errors[field] ? 'border-red-500/60 bg-red-500/5' : 'border-white/15'
         }`;
+
+    if (verificationSent) {
+        return (
+            <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-4 py-12">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+                    <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+                </div>
+                <div className="relative w-full max-w-md">
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
+                        <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-5">
+                            <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-3">Vérifiez votre email</h2>
+                        <p className="text-slate-400 text-sm mb-2">
+                            Un email de vérification a été envoyé à :
+                        </p>
+                        <p className="text-blue-400 font-medium mb-4">{form.email}</p>
+                        <p className="text-slate-500 text-sm mb-6">
+                            Cliquez sur le lien dans l'email pour activer votre compte. Le lien expire dans 30 minutes.
+                        </p>
+                        <Link
+                            to="/connexion"
+                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors"
+                        >
+                            Aller à la connexion
+                        </Link>
+                    </div>
+                    <p className="text-center text-slate-600 text-xs mt-6">© 2026 MobiliAlert — Bénin</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-4 py-12">
@@ -245,14 +277,14 @@ export default function Inscription() {
                         {step === 1 && (
                             <div className="space-y-4">
                                 <p className="text-slate-400 text-sm mb-4">
-                                    Renseignez au moins un email <strong className="text-slate-300">ou</strong> un numéro de téléphone.
+                                    L'email est requis pour la vérification de votre compte.
                                 </p>
                                 {errors.contact && (
                                     <p className="text-xs text-red-400 -mt-2">{errors.contact}</p>
                                 )}
                                 <div>
                                     <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                                        Email <span className="text-slate-500 font-normal">(optionnel)</span>
+                                        Email <span className="text-red-400 font-normal">*</span>
                                     </label>
                                     <input
                                         type="email"

@@ -451,16 +451,19 @@ export default function FormulaireSignalement() {
             await api.post(`/alertes/${alerteId}/interactions`, { type: 'confirmation' });
         } catch (err) {
             const status = err.response?.status;
-            // Tout 422 = règle métier (délai, déjà confirmé, etc.)
-            // → l'utilisateur a quand même identifié le bon incident, on redirige
-            if (status !== 422) {
+            const message = err.response?.data?.message || '';
+            const isOwnAlertError = /propre alerte/i.test(message);
+
+            // Si l'utilisateur tente de confirmer un doublon sur sa propre alerte,
+            // on ne l'affiche pas comme une erreur : on le redirige comme un cas de confirmation valide.
+            if (!isOwnAlertError && status !== 422) {
                 setErrors({ global: err.response?.data?.message || 'Erreur lors de la confirmation.' });
                 setDoublon(null);
                 setDoublonLoading(null);
                 return;
             }
         }
-        // Succès OU déjà confirmé récemment → écran confirmation + redirect
+        // Succès, déjà confirmé récemment, ou confirmation sur sa propre alerte → écran confirmation + redirect
         setDoublon(null);
         setDoublonLoading(null);
         setConfirmed(true);

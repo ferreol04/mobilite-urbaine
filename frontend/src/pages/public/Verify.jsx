@@ -11,6 +11,7 @@ export default function Verify() {
 
     const [status, setStatus] = useState('loading');
     const [error, setError] = useState('');
+    const [hasPendingContribution, setHasPendingContribution] = useState(false);
     const called = useRef(false);
 
     useEffect(() => {
@@ -29,6 +30,7 @@ export default function Verify() {
                 loginWithData(data.user, data.token);
 
                 if (data.pending_contribution) {
+                    setHasPendingContribution(true);
                     try {
                         await submitPendingContribution(data.pending_contribution, data.token);
                         setStatus('success');
@@ -65,9 +67,13 @@ export default function Verify() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-slate-800 mb-2">Contribution enregistrée !</h2>
+                        <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                            {hasPendingContribution ? 'Contribution enregistrée !' : 'Compte activé !'}
+                        </h2>
                         <p className="text-slate-500 mb-2">
-                            Votre contribution a été enregistrée avec succès. Merci de participer à l'amélioration de la mobilité urbaine.
+                            {hasPendingContribution
+                                ? 'Votre contribution a été enregistrée avec succès. Merci de participer à l\'amélioration de la mobilité urbaine.'
+                                : 'Votre compte a été activé avec succès. Vous êtes maintenant connecté.'}
                         </p>
                         <p className="text-sm text-slate-400">Redirection en cours...</p>
                         <div className="mt-4 w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />

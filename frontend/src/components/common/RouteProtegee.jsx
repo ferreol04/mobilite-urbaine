@@ -8,7 +8,7 @@ export function RouteUtilisateur() {
     if (loading) return <Loader />;
     return isAuthenticated
         ? <Outlet />
-        : <Navigate to="/connexion" replace state={{ from: location, message: 'Vous devez vous connecter pour accéder à cette page.' }} />;
+        : <Navigate to="/connexion" replace state={{ from: location }} />;
 }
 
 export function RouteAdmin() {
@@ -17,5 +17,5 @@ export function RouteAdmin() {
     if (loading) return <Loader />;
     return isAdmin
         ? <Outlet />
-        : <Navigate to="/connexion" replace state={{ from: location, message: 'Vous devez vous connecter pour accéder à cette page.' }} />;
+        : <Navigate to="/connexion" replace state={{ from: location }} />;
 }

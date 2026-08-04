@@ -10,7 +10,7 @@ export default function Connexion() {
 
     const [form, setForm] = useState({ login: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
-    const [success, setSuccess] = useState(location.state?.message || '');
+    const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 

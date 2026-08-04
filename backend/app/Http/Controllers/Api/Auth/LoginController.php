@@ -26,6 +26,10 @@ class LoginController extends Controller
             return response()->json(['message' => 'Identifiants incorrects.'], 401);
         }
 
+        if ($user->status === 'pending') {
+            return response()->json(['message' => 'Votre compte n\'est pas encore activé. Veuillez vérifier votre boîte email pour activer votre compte.'], 403);
+        }
+
         if ($user->role === 'user' && $user->status !== 'active') {
             return response()->json(['message' => 'Votre compte est suspendu ou banni.'], 403);
         }
