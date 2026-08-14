@@ -11,29 +11,39 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ConfigPubliqueController;
 use App\Http\Controllers\Api\InteractionController;
 use App\Http\Controllers\Api\ZoneARisqueController;
+use App\Http\Controllers\Api\Auth\CheckEmailController;
 use App\Http\Controllers\Api\Auth\ContributeAuthController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Http\Controllers\Api\Auth\ResendVerificationController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\TempUploadController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/register', RegisterController::class);
-Route::post('/login', LoginController::class);
-Route::post('/forgot-password', ForgotPasswordController::class);
-Route::post('/reset-password', ResetPasswordController::class);
+// Limitation de débit sur les routes d'authentification : par IP, pour
+// contrer le brute-force (mot de passe), le spam d'emails et l'énumération
+// de comptes. "5,1" = 5 requêtes par minute, "10,1" = 10 par minute.
+Route::post('/login', LoginController::class)->middleware('throttle:5,1');
+Route::post('/auth/login-password', [ContributeAuthController::class, 'loginWithPassword'])->middleware('throttle:5,1');
 
-// Flow d'authentification intégrée aux contributions
-Route::post('/auth/identify', [ContributeAuthController::class, 'identify']);
-Route::post('/auth/login-password', [ContributeAuthController::class, 'loginWithPassword']);
-Route::post('/auth/send-magic-link', [ContributeAuthController::class, 'sendMagicLink']);
-Route::post('/auth/verify', [ContributeAuthController::class, 'verify']);
-Route::post('/auth/confirm-delete', [ContributeAuthController::class, 'confirmDelete']);
-Route::post('/temp-upload', [TempUploadController::class, 'store']);
+Route::post('/register', RegisterController::class)->middleware('throttle:5,1');
+Route::post('/resend-verification', ResendVerificationController::class)->middleware('throttle:5,1');
+Route::post('/forgot-password', ForgotPasswordController::class)->middleware('throttle:5,1');
+Route::post('/auth/send-magic-link', [ContributeAuthController::class, 'sendMagicLink'])->middleware('throttle:5,1');
+Route::post('/auth/confirm-delete', [ContributeAuthController::class, 'confirmDelete'])->middleware('throttle:5,1');
+
+Route::post('/check-email', CheckEmailController::class)->middleware('throttle:10,1');
+Route::post('/reset-password', ResetPasswordController::class)->middleware('throttle:10,1');
+Route::post('/auth/identify', [ContributeAuthController::class, 'identify'])->middleware('throttle:10,1');
+Route::post('/auth/verify', [ContributeAuthController::class, 'verify'])->middleware('throttle:10,1');
+
+// Non authentifié par nature (upload avant inscription/vérification), donc
+// protégé par une limite de débit pour éviter l'abus par un script anonyme.
+Route::post('/temp-upload', [TempUploadController::class, 'store'])->middleware('throttle:10,1');
 
 // Routes publiques — accessibles visiteur et utilisateur connecté
 Route::get('/config', [ConfigPubliqueController::class, 'index']);

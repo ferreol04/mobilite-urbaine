@@ -396,6 +396,7 @@ export default function FormulaireSignalement() {
         if (!isAuthenticated) {
             // Upload temporaire des photos avant auth
             let tempPhotos = [];
+            let uploadToken = null;
             if (photos.length > 0) {
                 try {
                     const fd = new FormData();
@@ -404,6 +405,7 @@ export default function FormulaireSignalement() {
                         headers: { 'Content-Type': 'multipart/form-data' },
                     });
                     tempPhotos = data.paths;
+                    uploadToken = data.upload_token;
                 } catch {
                     setErrors({ global: 'Erreur lors de l\'upload des photos. Réessayez.' });
                     return;
@@ -424,6 +426,7 @@ export default function FormulaireSignalement() {
                         district: form.district.trim(),
                         location_description: form.location_description.trim(),
                         temp_photos: tempPhotos.length > 0 ? tempPhotos : null,
+                        upload_token: uploadToken,
                     },
                 },
                 message: 'Dernière étape avant l\'enregistrement de votre contribution. Afin de garantir la fiabilité des informations publiées sur la plateforme, veuillez renseigner une adresse e-mail.',

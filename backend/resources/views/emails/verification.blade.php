@@ -9,15 +9,19 @@
 
     <p>Bonjour,</p>
 
-    <p>Vous avez initié une contribution sur la plateforme Mobilité Urbaine. Afin de garantir la fiabilité des informations publiées, veuillez confirmer votre identité en cliquant sur le bouton ci-dessous.</p>
+    @if ($context === 'registration')
+        <p>Vous venez de créer un compte sur la plateforme Mobilité Urbaine. Pour l'activer, veuillez confirmer votre identité en cliquant sur le bouton ci-dessous.</p>
+    @else
+        <p>Vous avez initié une contribution sur la plateforme Mobilité Urbaine. Afin de garantir la fiabilité des informations publiées, veuillez confirmer votre identité en cliquant sur le bouton ci-dessous.</p>
+    @endif
 
     <p style="text-align: center; margin: 30px 0;">
         <a href="{{ $verificationUrl }}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-            Confirmer mon identité
+            {{ $context === 'registration' ? 'Activer mon compte' : 'Confirmer mon identité' }}
         </a>
     </p>
 
-    <p>Ce lien est valable pendant 30 minutes.</p>
+    <p>Ce lien est valable pendant {{ $expiresInMinutes }} minutes.</p>
 
     <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p>
 

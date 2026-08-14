@@ -131,13 +131,29 @@ class ContributeAuthController extends Controller
             'token' => ['required', 'string', 'size:64'],
         ]);
 
-        $verification = VerificationToken::where('token', $request->token)
-            ->where('used', false)
-            ->first();
+        $verification = VerificationToken::where('token', $request->token)->first();
 
-        if (!$verification || !$verification->isValid()) {
+        if (!$verification) {
             return response()->json([
-                'message' => 'Le lien de vérification est invalide ou a expiré.',
+                'message' => 'Ce lien de vérification est invalide.',
+            ], 422);
+        }
+
+        if ($verification->used) {
+            return response()->json([
+                'message' => 'Ce lien de vérification a déjà été utilisé.',
+                'reason'  => 'used',
+            ], 422);
+        }
+
+        if ($verification->expires_at->isPast()) {
+            return response()->json([
+                'message'   => 'Ce lien de vérification a expiré. Veuillez en demander un nouveau.',
+                'reason'    => 'expired',
+                // Renvoyé uniquement pour permettre au frontend de proposer un renvoi
+                // d'email sans redemander la saisie à l'utilisateur.
+                'email'     => $verification->type === 'registration_verification' ? $verification->email : null,
+                'resendable' => $verification->type === 'registration_verification',
             ], 422);
         }
 
@@ -156,14 +172,31 @@ class ContributeAuthController extends Controller
                 'registration_date'      => now(),
             ]);
         } elseif ($verification->type === 'registration_verification') {
-            // Inscription classique — activer le compte
-            $user = User::where('email', $verification->email)->first();
-
-            if (!$user) {
-                return response()->json(['message' => 'Compte introuvable.'], 404);
+            // Inscription classique — le compte n'existe pas encore, on le crée maintenant
+            if (User::where('email', $verification->email)->exists()) {
+                return response()->json(['message' => 'Un compte existe déjà avec cet email.'], 409);
             }
 
-            $user->update(['status' => 'active']);
+            $data = $verification->pending_contribution ?? [];
+
+            if (!empty($data['phone']) && User::where('phone', $data['phone'])->exists()) {
+                return response()->json(['message' => 'Ce numéro de téléphone est déjà utilisé.'], 409);
+            }
+
+            $user = User::create([
+                'last_name'               => $data['last_name'] ?? null,
+                'first_name'              => $data['first_name'] ?? null,
+                'pseudo'                  => User::generatePseudo(),
+                'display_name_preference' => 'real_name',
+                'gender'                  => $data['gender'] ?? null,
+                'email'                   => $verification->email,
+                'phone'                   => $data['phone'] ?? null,
+                'password'                => $data['password'] ?? null,
+                'has_password'            => true,
+                'role'                    => 'user',
+                'status'                  => 'active',
+                'registration_date'       => now(),
+            ]);
         } else {
             // magic_login — récupérer le compte existant
             $user = User::where('email', $verification->email)->first();
@@ -175,13 +208,20 @@ class ContributeAuthController extends Controller
 
         $token = $user->createToken('auth_token', ['*'], now()->addDays(30))->plainTextToken;
 
+        // Pour 'registration_verification', pending_contribution contenait les données
+        // d'inscription (déjà consommées ci-dessus pour créer le compte) — ce n'est pas
+        // une contribution à soumettre, donc on ne le renvoie pas dans ce cas.
+        $pendingContribution = $verification->type === 'registration_verification'
+            ? null
+            : $verification->pending_contribution;
+
         return response()->json([
             'status'               => 'authenticated',
             'message'              => 'Vérification réussie.',
             'user'                 => $user,
             'token'                => $token,
             'is_new_account'       => $verification->type === 'account_verification',
-            'pending_contribution' => $verification->pending_contribution,
+            'pending_contribution' => $pendingContribution,
         ]);
     }
 
@@ -251,12 +291,23 @@ class ContributeAuthController extends Controller
 
         $verification = VerificationToken::where('token', $request->token)
             ->where('type', 'account_deletion')
-            ->where('used', false)
             ->first();
 
-        if (!$verification || !$verification->isValid()) {
+        if (!$verification) {
             return response()->json([
-                'message' => 'Le lien de confirmation est invalide ou a expiré.',
+                'message' => 'Ce lien de confirmation est invalide.',
+            ], 422);
+        }
+
+        if ($verification->used) {
+            return response()->json([
+                'message' => 'Ce lien de confirmation a déjà été utilisé.',
+            ], 422);
+        }
+
+        if ($verification->expires_at->isPast()) {
+            return response()->json([
+                'message' => 'Ce lien de confirmation a expiré. Veuillez en demander un nouveau.',
             ], 422);
         }
 

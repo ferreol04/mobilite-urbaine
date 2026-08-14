@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Mail\ResetPasswordMail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -70,5 +72,19 @@ class User extends Authenticatable
     public function interactions(): HasMany
     {
         return $this->hasMany(Interaction::class);
+    }
+
+    /**
+     * Surcharge du système de notification natif de Laravel : on envoie
+     * directement notre propre email personnalisé (mise en file d'attente
+     * automatique grâce à ShouldQueue sur ResetPasswordMail), plutôt que la
+     * notification "ResetPassword" par défaut, synchrone et non personnalisable.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $resetUrl = config('app.frontend_url', config('app.url'))
+            . '/reset-password?token=' . $token . '&email=' . urlencode($this->email);
+
+        Mail::to($this->email)->send(new ResetPasswordMail($resetUrl, config('auth.passwords.users.expire')));
     }
 }

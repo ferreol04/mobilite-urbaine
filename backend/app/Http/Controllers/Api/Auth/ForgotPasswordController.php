@@ -33,6 +33,12 @@ class ForgotPasswordController extends Controller
 
         $status = Password::sendResetLink($request->only('email'));
 
+        if ($status === Password::RESET_THROTTLED) {
+            return response()->json([
+                'message' => 'Un lien vient déjà de vous être envoyé. Veuillez patienter avant de réessayer.',
+            ], 429);
+        }
+
         if ($status !== Password::RESET_LINK_SENT) {
             return response()->json(['message' => __($status)], 422);
         }

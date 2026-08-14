@@ -49,7 +49,10 @@ export default function Inscription() {
     const [showPwd, setShowPwd] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [checkingEmail, setCheckingEmail] = useState(false);
     const [verificationSent, setVerificationSent] = useState(false);
+    const [resendState, setResendState] = useState('idle'); // idle | sending | sent | error
+    const [resendMessage, setResendMessage] = useState('');
 
     function set(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
@@ -87,10 +90,29 @@ export default function Inscription() {
         return e;
     }
 
-    function nextStep() {
+    async function nextStep() {
         const validators = [validateStep0, validateStep1];
         const e = validators[step]();
         if (Object.keys(e).length) { setErrors(e); return; }
+
+        // Vérification serveur de la disponibilité de l'email avant de continuer,
+        // pour ne pas laisser l'utilisateur remplir le mot de passe pour rien.
+        if (step === 1) {
+            setCheckingEmail(true);
+            try {
+                const { data } = await api.post('/check-email', { email: form.email.trim() });
+                if (!data.available) {
+                    setErrors({ email: 'Cette adresse email est déjà utilisée.' });
+                    setCheckingEmail(false);
+                    return;
+                }
+            } catch {
+                // En cas d'erreur réseau, on laisse passer — l'unicité sera
+                // de toute façon revérifiée à la soumission finale.
+            }
+            setCheckingEmail(false);
+        }
+
         setStep((s) => s + 1);
     }
 
@@ -138,6 +160,19 @@ export default function Inscription() {
         }
     }
 
+    async function handleResend() {
+        setResendState('sending');
+        setResendMessage('');
+        try {
+            const { data } = await api.post('/resend-verification', { email: form.email.trim() });
+            setResendState('sent');
+            setResendMessage(data.message || 'Un nouvel email a été envoyé.');
+        } catch (err) {
+            setResendState('error');
+            setResendMessage(err.response?.data?.message || 'Impossible de renvoyer l\'email pour le moment.');
+        }
+    }
+
     const inputCls = (field) =>
         `w-full px-4 py-2.5 rounded-lg bg-white/5 border text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${
             errors[field] ? 'border-red-500/60 bg-red-500/5' : 'border-white/15'
@@ -165,12 +200,29 @@ export default function Inscription() {
                         <p className="text-slate-500 text-sm mb-6">
                             Cliquez sur le lien dans l'email pour activer votre compte. Le lien expire dans 30 minutes.
                         </p>
-                        <Link
-                            to="/connexion"
-                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors"
-                        >
-                            Aller à la connexion
-                        </Link>
+
+                        {resendMessage && (
+                            <p className={`text-xs mb-4 ${resendState === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+                                {resendMessage}
+                            </p>
+                        )}
+
+                        <div className="flex flex-col gap-3">
+                            <Link
+                                to="/connexion"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors"
+                            >
+                                Aller à la connexion
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={handleResend}
+                                disabled={resendState === 'sending'}
+                                className="text-slate-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {resendState === 'sending' ? 'Envoi en cours…' : 'Vous n\'avez rien reçu ? Renvoyer l\'email'}
+                            </button>
+                        </div>
                     </div>
                     <p className="text-center text-slate-600 text-xs mt-6">© 2026 MobiliAlert — Bénin</p>
                 </div>
@@ -319,9 +371,15 @@ export default function Inscription() {
                                     <button
                                         type="button"
                                         onClick={nextStep}
-                                        className="flex-1 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors"
+                                        disabled={checkingEmail}
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-colors"
                                     >
-                                        Continuer →
+                                        {checkingEmail ? (
+                                            <>
+                                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                Vérification…
+                                            </>
+                                        ) : 'Continuer →'}
                                     </button>
                                 </div>
                             </div>

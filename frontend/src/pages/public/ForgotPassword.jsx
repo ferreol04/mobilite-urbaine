@@ -27,6 +27,8 @@ export default function ForgotPassword() {
                 setError(messages?.[0] || err.response?.data?.message || 'L’email est invalide.');
             } else if (status === 404) {
                 setError(err.response?.data?.message || 'Cet email n’existe pas dans notre base.');
+            } else if (status === 429) {
+                setError(err.response?.data?.message || 'Veuillez patienter avant de réessayer.');
             } else {
                 setError(err.response?.data?.message || 'Une erreur est survenue. Réessayez plus tard.');
             }
@@ -104,6 +106,8 @@ export default function ForgotPassword() {
                         >
                             {loading ? (
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : success ? (
+                                'Renvoyer le lien'
                             ) : (
                                 'Envoyer le lien'
                             )}

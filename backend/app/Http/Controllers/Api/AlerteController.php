@@ -7,9 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Alerte;
 use App\Models\Category;
 use App\Models\Parametre;
+use App\Models\TempUpload;
 use App\Models\TypeIncident;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AlerteController extends Controller
 {
@@ -46,7 +48,9 @@ class AlerteController extends Controller
             'photos'               => ['nullable', 'array', 'max:5'],
             'photos.*'             => ['image', 'max:2048'],
             'temp_photos'          => ['nullable', 'array', 'max:5'],
-            'temp_photos.*'        => ['string'],
+            // Doit être un chemin retourné par /temp-upload, jamais un chemin arbitraire.
+            'temp_photos.*'        => ['string', 'regex:/^temp_alertes\/[a-zA-Z0-9_\-\.]+$/'],
+            'upload_token'         => ['required_with:temp_photos', 'nullable', 'string', 'size:40'],
         ];
 
         if ($isOther) {
@@ -110,14 +114,7 @@ class AlerteController extends Controller
 
         // Photos pré-uploadées (flow vérification email)
         if ($request->filled('temp_photos')) {
-            $storage = \Illuminate\Support\Facades\Storage::disk('public');
-            foreach ($request->temp_photos as $tempPath) {
-                if ($storage->exists($tempPath)) {
-                    $newPath = 'alertes/' . basename($tempPath);
-                    $storage->move($tempPath, $newPath);
-                    $alerte->medias()->create(['url' => $newPath]);
-                }
-            }
+            $this->attacherTempPhotos($alerte, $request->temp_photos, $request->upload_token);
         }
 
         // Diffuser l'événement en temps réel
@@ -127,6 +124,36 @@ class AlerteController extends Controller
             $alerte->load(['category:id,name', 'typeIncident:id,name,icon', 'medias:id,alerte_id,url']),
             201
         );
+    }
+
+    /**
+     * Rattache à l'alerte des photos uploadées avant authentification via
+     * /temp-upload, en vérifiant qu'elles ont bien été uploadées avec le
+     * jeton fourni — empêche un utilisateur de s'approprier une photo
+     * uploadée par quelqu'un d'autre en devinant/récupérant son chemin.
+     */
+    private function attacherTempPhotos(Alerte $alerte, array $tempPhotos, ?string $uploadToken): void
+    {
+        if (!$uploadToken) {
+            return;
+        }
+
+        $storage = Storage::disk('public');
+
+        foreach ($tempPhotos as $tempPath) {
+            $upload = TempUpload::where('path', $tempPath)
+                ->where('token', $uploadToken)
+                ->first();
+
+            if (!$upload || !$storage->exists($tempPath)) {
+                continue;
+            }
+
+            $newPath = 'alertes/' . basename($tempPath);
+            $storage->move($tempPath, $newPath);
+            $alerte->medias()->create(['url' => $newPath]);
+            $upload->delete();
+        }
     }
 
     public function show(Alerte $alerte): JsonResponse

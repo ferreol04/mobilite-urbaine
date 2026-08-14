@@ -12,6 +12,9 @@ export default function Verify() {
     const [status, setStatus] = useState('loading');
     const [error, setError] = useState('');
     const [hasPendingContribution, setHasPendingContribution] = useState(false);
+    const [resendEmail, setResendEmail] = useState(null);
+    const [resendState, setResendState] = useState('idle'); // idle | sending | sent | error
+    const [resendMessage, setResendMessage] = useState('');
     const called = useRef(false);
 
     useEffect(() => {
@@ -46,8 +49,25 @@ export default function Verify() {
             .catch((err) => {
                 setStatus('error');
                 setError(err.response?.data?.message || 'Le lien de vérification est invalide ou expiré.');
+                if (err.response?.data?.resendable && err.response?.data?.email) {
+                    setResendEmail(err.response.data.email);
+                }
             });
     }, [searchParams, loginWithData, navigate]);
+
+    async function handleResend() {
+        if (!resendEmail) return;
+        setResendState('sending');
+        setResendMessage('');
+        try {
+            const { data } = await api.post('/resend-verification', { email: resendEmail });
+            setResendState('sent');
+            setResendMessage(data.message || 'Un nouvel email a été envoyé.');
+        } catch (err) {
+            setResendState('error');
+            setResendMessage(err.response?.data?.message || 'Impossible de renvoyer l\'email pour le moment.');
+        }
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -89,12 +109,30 @@ export default function Verify() {
                         </div>
                         <h2 className="text-2xl font-bold text-slate-800 mb-2">Vérification échouée</h2>
                         <p className="text-slate-500 mb-4">{error}</p>
-                        <button
-                            onClick={() => navigate('/', { replace: true })}
-                            className="px-6 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-semibold text-sm transition-colors"
-                        >
-                            Retour à l'accueil
-                        </button>
+
+                        {resendMessage && (
+                            <p className={`text-sm mb-4 ${resendState === 'error' ? 'text-red-600' : 'text-green-600'}`}>
+                                {resendMessage}
+                            </p>
+                        )}
+
+                        <div className="flex flex-col items-center gap-3">
+                            {resendEmail && resendState !== 'sent' && (
+                                <button
+                                    onClick={handleResend}
+                                    disabled={resendState === 'sending'}
+                                    className="px-6 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-colors"
+                                >
+                                    {resendState === 'sending' ? 'Envoi en cours…' : 'Renvoyer l\'email de vérification'}
+                                </button>
+                            )}
+                            <button
+                                onClick={() => navigate('/', { replace: true })}
+                                className="px-6 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-sm transition-colors"
+                            >
+                                Retour à l'accueil
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

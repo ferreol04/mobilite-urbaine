@@ -13,3 +13,7 @@ Schedule::command('app:expire-alertes')->everyMinute();
 
 // Recalcul des zones à risque toutes les heures
 Schedule::command('app:calculer-zones-a-risque')->hourly();
+
+// Nettoyage des photos temporaires jamais rattachées à une alerte
+// (upload possible sans compte via /temp-upload — évite l'accumulation)
+Schedule::command('app:nettoyer-uploads-temporaires')->hourly();
