@@ -5,7 +5,7 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-import { getIconeIncident, getIconeIncidentPulse } from '../../utils/iconeIncident';
+import { getIconeIncident, getIconeIncidentPulse, CATEGORY_COLORS, DEFAULT_COLOR } from '../../utils/iconeIncident';
 import PopupAlerte from '../alertes/PopupAlerte';
 import useAuth from '../../hooks/useAuth';
 
@@ -135,8 +135,8 @@ function ClusterLayer({ alertes, newIds, onMarkerClick }) {
         alertes.forEach((alerte) => {
             const isNew  = newIds.has(alerte.id);
             const icon   = isNew
-                ? getIconeIncidentPulse(alerte.type_incident?.icon)
-                : getIconeIncident(alerte.type_incident?.icon);
+                ? getIconeIncidentPulse(alerte.type_incident?.icon, alerte.category?.name)
+                : getIconeIncident(alerte.type_incident?.icon, alerte.category?.name);
 
             const marker = L.marker([alerte.latitude, alerte.longitude], { icon });
             marker.on('click', () => onMarkerClick(alerte));
@@ -145,6 +145,41 @@ function ClusterLayer({ alertes, newIds, onMarkerClick }) {
     }, [alertes, newIds, onMarkerClick]);
 
     return null;
+}
+
+// ── Légende des couleurs par catégorie ────────────────────────────────────────
+function LegendeCarte({ open, onToggle }) {
+    const entries = [...Object.entries(CATEGORY_COLORS), ['Autres', DEFAULT_COLOR]];
+
+    return (
+        <div className="absolute bottom-6 left-4 sm:bottom-8 sm:left-6 z-500">
+            {open && (
+                <div className="mb-2 bg-white shadow-lg border border-slate-200 rounded-xl p-3 w-56 max-h-[60vh] overflow-y-auto">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Légende</p>
+                    <ul className="space-y-1.5">
+                        {entries.map(([name, color]) => (
+                            <li key={name} className="flex items-center gap-2 text-xs text-slate-700">
+                                <span
+                                    className="w-3 h-3 rounded-full shrink-0 border"
+                                    style={{ background: color.bg, borderColor: color.border }}
+                                />
+                                {name}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+            <button
+                onClick={onToggle}
+                className="w-9 h-9 bg-white border border-slate-200 rounded-lg shadow-md flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                title="Légende"
+            >
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                </svg>
+            </button>
+        </div>
+    );
 }
 
 // ── Composant principal ────────────────────────────────────────────────────────
@@ -156,6 +191,7 @@ export default function CarteInteractive({ alertes, zones, ville = '', onFiltreC
 
     const [selectedAlerte, setSelectedAlerte] = useState(null);
     const [newIds, setNewIds]                 = useState(new Set());
+    const [legendeOpen, setLegendeOpen]       = useState(false);
 
     // Détecte les nouvelles alertes (temps réel) pour l'animation pulse
     useEffect(() => {
@@ -223,6 +259,8 @@ export default function CarteInteractive({ alertes, zones, ville = '', onFiltreC
                     −
                 </button>
             </div>
+
+            <LegendeCarte open={legendeOpen} onToggle={() => setLegendeOpen((v) => !v)} />
 
             {selectedAlerte && (
                 <PopupAlerte

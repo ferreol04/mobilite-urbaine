@@ -241,16 +241,24 @@ export default function FormulaireSignalement() {
                     return found || communesNorm.get(norm(val)) || '';
                 }, '');
 
-                // Localité : suburb > neighbourhood > quarter > village > hamlet
+                // Localité : suburb en priorité, puis repli sur les autres champs OSM
+                // si absent (le découpage OSM du Bénin restant de toute façon
+                // approximatif par endroits — la valeur n'est proposée que comme
+                // suggestion cliquable, jamais imposée, voir le champ Quartier plus bas).
                 const localite = addr.suburb || addr.neighbourhood || addr.quarter
                     || addr.village || addr.hamlet || addr.locality || '';
 
                 setCityFromGPS(commune);
                 setDistrictFromGPS(localite);
+                // On ne pré-remplit que la commune (fiable — 77 valeurs officielles).
+                // Le quartier n'est jamais imposé automatiquement : le découpage OSM
+                // est souvent trop grossier dans certaines zones (ex : tout le secteur
+                // autour du campus d'Abomey-Calavi remonte comme "Togoudo" ou
+                // "Agonkanmey" alors que l'utilisateur est ailleurs à proximité). Il est
+                // seulement proposé comme suggestion cliquable, voir plus bas.
                 setForm((prev) => ({
                     ...prev,
-                    city:     commune  || prev.city,
-                    district: localite || prev.district,
+                    city: commune || prev.city,
                 }));
             })
             .catch(() => {})
@@ -733,9 +741,22 @@ export default function FormulaireSignalement() {
                                         type="text"
                                         value={form.district}
                                         onChange={(e) => setField('district', e.target.value)}
-                                        placeholder={districtFromGPS ? districtFromGPS : 'Ex : Cadjehoun, Akpakpa…'}
+                                        placeholder="Ex : Cadjehoun, Akpakpa…"
                                         className={inputCls('district')}
                                     />
+                                    {districtFromGPS && districtFromGPS !== form.district && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setField('district', districtFromGPS)}
+                                            className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800"
+                                        >
+                                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                            </svg>
+                                            Suggestion approximative : <span className="font-semibold">{districtFromGPS}</span> — vérifiez avant d'utiliser
+                                        </button>
+                                    )}
                                     <FieldError msg={errors.district} />
                                 </div>
 

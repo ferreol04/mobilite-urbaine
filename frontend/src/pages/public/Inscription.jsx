@@ -180,85 +180,165 @@ export default function Inscription() {
 
     if (verificationSent) {
         return (
-            <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-4 py-12">
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
-                    <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-                </div>
-                <div className="relative w-full max-w-md">
-                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
-                        <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-5">
-                            <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+            <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex">
+                {/* Colonne image (masquée sur mobile) */}
+                <div className="hidden lg:block relative lg:w-1/2 xl:w-3/5">
+                    <img
+                        src="https://images.pexels.com/photos/30726387/pexels-photo-30726387.jpeg?auto=compress&cs=tinysrgb&w=1600"
+                        alt="Rue animée avec circulation de motos en heure de pointe"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-slate-950/30 to-slate-950/60" />
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent to-slate-900/40" />
+
+                    <Link to="/" className="absolute top-6 left-6 z-20 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-white text-sm font-medium transition-all backdrop-blur-sm">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                        </svg>
+                        Accueil
+                    </Link>
+
+                    <div className="relative h-full flex flex-col justify-end p-10 xl:p-14">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/40 mb-5">
+                            <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-3">Vérifiez votre email</h2>
-                        <p className="text-slate-400 text-sm mb-2">
-                            Un email de vérification a été envoyé à :
+                        <h1 className="text-3xl xl:text-4xl font-bold text-white mb-3 max-w-md">
+                            La mobilité urbaine au Bénin, en temps réel
+                        </h1>
+                        <p className="text-slate-300 text-base max-w-sm mb-6">
+                            Signalez les incidents, suivez les alertes et déplacez-vous en toute sécurité dans votre ville.
                         </p>
-                        <p className="text-blue-400 font-medium mb-4">{form.email}</p>
-                        <p className="text-slate-500 text-sm mb-6">
-                            Cliquez sur le lien dans l'email pour activer votre compte. Le lien expire dans 30 minutes.
-                        </p>
-
-                        {resendMessage && (
-                            <p className={`text-xs mb-4 ${resendState === 'error' ? 'text-red-400' : 'text-green-400'}`}>
-                                {resendMessage}
-                            </p>
-                        )}
-
-                        <div className="flex flex-col gap-3">
-                            <Link
-                                to="/connexion"
-                                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors"
-                            >
-                                Aller à la connexion
-                            </Link>
-                            <button
-                                type="button"
-                                onClick={handleResend}
-                                disabled={resendState === 'sending'}
-                                className="text-slate-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {resendState === 'sending' ? 'Envoi en cours…' : 'Vous n\'avez rien reçu ? Renvoyer l\'email'}
-                            </button>
-                        </div>
                     </div>
-                    <p className="text-center text-slate-600 text-xs mt-6">© 2026 MobiliAlert — Bénin</p>
+                </div>
+
+                {/* Colonne contenu */}
+                <div className="relative flex-1 flex items-center justify-center px-4 py-12">
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+                        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+                    </div>
+
+                    <Link to="/" className="lg:hidden absolute top-5 left-5 z-20 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white text-sm font-medium transition-all">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                        </svg>
+                        Accueil
+                    </Link>
+
+                    <div className="relative w-full max-w-md">
+                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl text-center">
+                            <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-5">
+                                <svg className="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                                </svg>
+                            </div>
+                            <h2 className="text-2xl font-bold text-white mb-3">Vérifiez votre email</h2>
+                            <p className="text-slate-400 text-sm mb-2">
+                                Un email de vérification a été envoyé à :
+                            </p>
+                            <p className="text-blue-400 font-medium mb-4">{form.email}</p>
+                            <p className="text-slate-500 text-sm mb-6">
+                                Cliquez sur le lien dans l'email pour activer votre compte. Le lien expire dans 30 minutes.
+                            </p>
+
+                            {resendMessage && (
+                                <p className={`text-xs mb-4 ${resendState === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+                                    {resendMessage}
+                                </p>
+                            )}
+
+                            <div className="flex flex-col gap-3">
+                                <Link
+                                    to="/connexion"
+                                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors"
+                                >
+                                    Aller à la connexion
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={handleResend}
+                                    disabled={resendState === 'sending'}
+                                    className="text-slate-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {resendState === 'sending' ? 'Envoi en cours…' : 'Vous n\'avez rien reçu ? Renvoyer l\'email'}
+                                </button>
+                            </div>
+                        </div>
+                        <p className="text-center text-slate-600 text-xs mt-6">© 2026 MobiliAlert — Bénin</p>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-4 py-12">
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-            </div>
+        <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex">
+            {/* Colonne image (masquée sur mobile) */}
+            <div className="hidden lg:block relative lg:w-1/2 xl:w-3/5">
+                <img
+                    src="https://images.pexels.com/photos/30726387/pexels-photo-30726387.jpeg?auto=compress&cs=tinysrgb&w=1600"
+                    alt="Rue animée avec circulation de motos en heure de pointe"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-slate-950/30 to-slate-950/60" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent to-slate-900/40" />
 
-            {/* Retour accueil */}
-            <Link to="/" className="absolute top-5 left-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white text-sm font-medium transition-all">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                </svg>
-                Accueil
-            </Link>
+                <Link to="/" className="absolute top-6 left-6 z-20 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-white text-sm font-medium transition-all backdrop-blur-sm">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    Accueil
+                </Link>
 
-            <div className="relative w-full max-w-md">
-                {/* Logo */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/40 mb-4">
-                        <svg className="w-9 h-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <div className="relative h-full flex flex-col justify-end p-10 xl:p-14">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/40 mb-5">
+                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
                         </svg>
                     </div>
-                    <h1 className="text-2xl font-bold text-white">MobiliAlert</h1>
-                    <p className="text-slate-400 text-sm mt-1">Créez votre compte en 3 étapes</p>
+                    <h1 className="text-3xl xl:text-4xl font-bold text-white mb-3 max-w-md">
+                        La mobilité urbaine au Bénin, en temps réel
+                    </h1>
+                    <p className="text-slate-300 text-base max-w-sm mb-6">
+                        Signalez les incidents, suivez les alertes et déplacez-vous en toute sécurité dans votre ville.
+                    </p>
+                </div>
+            </div>
+
+            {/* Colonne formulaire */}
+            <div className="relative flex-1 flex items-center justify-center px-4 py-12">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+                    <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
                 </div>
 
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-                    <ProgressBar step={step} />
+                {/* Retour accueil (mobile uniquement, l'autre est dans la colonne image) */}
+                <Link to="/" className="lg:hidden absolute top-5 left-5 z-20 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white text-sm font-medium transition-all">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    Accueil
+                </Link>
+
+                <div className="relative w-full max-w-md">
+                    {/* Logo (mobile uniquement) */}
+                    <div className="lg:hidden text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/40 mb-4">
+                            <svg className="w-9 h-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+                            </svg>
+                        </div>
+                        <h1 className="text-2xl font-bold text-white">MobiliAlert</h1>
+                        <p className="text-slate-400 text-sm mt-1">Créez votre compte en 3 étapes</p>
+                    </div>
+
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+                        <h2 className="text-xl font-semibold text-white mb-1">Créer un compte</h2>
+                        <p className="text-slate-400 text-sm mb-6">Rejoignez la communauté et signalez les incidents de mobilité</p>
+
+                        <ProgressBar step={step} />
 
                     {globalError && (
                         <div className="mb-5 flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
@@ -298,7 +378,7 @@ export default function Inscription() {
                                 <div>
                                     <label className="block text-sm font-medium text-slate-300 mb-1.5">Genre</label>
                                     <div className="grid grid-cols-2 gap-3">
-                                        {[{ value: 'male', label: 'Homme', icon: '👨' }, { value: 'female', label: 'Femme', icon: '👩' }].map(({ value, label, icon }) => (
+                                        {[{ value: 'male', label: 'Homme' }, { value: 'female', label: 'Femme' }].map(({ value, label }) => (
                                             <button
                                                 key={value}
                                                 type="button"
@@ -309,7 +389,10 @@ export default function Inscription() {
                                                         : 'bg-white/5 border-white/15 text-slate-400 hover:border-white/30 hover:text-white'
                                                 }`}
                                             >
-                                                <span>{icon}</span> {label}
+                                                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                                </svg>
+                                                {label}
                                             </button>
                                         ))}
                                     </div>
@@ -460,7 +543,8 @@ export default function Inscription() {
                     </div>
                 </div>
 
-                <p className="text-center text-slate-600 text-xs mt-6">© 2026 MobiliAlert — Bénin</p>
+                    <p className="text-center text-slate-600 text-xs mt-6">© 2026 MobiliAlert — Bénin</p>
+                </div>
             </div>
         </div>
     );

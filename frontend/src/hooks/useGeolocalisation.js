@@ -13,13 +13,18 @@ export default function useGeolocalisation() {
         setLoading(true);
         navigator.geolocation.getCurrentPosition(
             ({ coords }) => {
-                setPosition({ latitude: coords.latitude, longitude: coords.longitude });
+                setPosition({ latitude: coords.latitude, longitude: coords.longitude, accuracy: coords.accuracy });
                 setLoading(false);
             },
             (err) => {
                 setError(err.message);
                 setLoading(false);
-            }
+            },
+            // Sans enableHighAccuracy, certains navigateurs renvoient une position
+            // approximative (réseau/IP) qui peut retomber dans un quartier voisin
+            // au lieu de la position GPS réelle — d'où des quartiers erronés
+            // (ex : Togoudo au lieu de Godomey, communes limitrophes).
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }, []);
 

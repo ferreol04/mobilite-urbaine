@@ -20,10 +20,12 @@ export default function PopupAlerte({ alerte, onClose }) {
     }, [onClose]);
 
     return (
-        <>
+        <div
+            ref={ref}
+            className="contents"
+        >
             {/* Popup carte */}
             <div
-                ref={ref}
                 className="absolute bottom-4 left-3 right-3 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-80 z-1000
                            bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden
                            animate-in fade-in slide-in-from-bottom-3 duration-200"
@@ -119,7 +121,7 @@ export default function PopupAlerte({ alerte, onClose }) {
             {showPhotos && photos.length > 0 && (
                 <PhotoModal photos={photos} onClose={() => setShowPhotos(false)} alerte={alerte} />
             )}
-        </>
+        </div>
     );
 }
 

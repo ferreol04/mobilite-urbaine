@@ -3,7 +3,8 @@ import { getIconeIncident, getIconeIncidentPulse } from '../../utils/iconeIncide
 
 export default function MarqueurIncident({ alerte, isNew = false, onClick }) {
     const iconName = alerte.type_incident?.icon;
-    const icon = isNew ? getIconeIncidentPulse(iconName) : getIconeIncident(iconName);
+    const categoryName = alerte.category?.name;
+    const icon = isNew ? getIconeIncidentPulse(iconName, categoryName) : getIconeIncident(iconName, categoryName);
 
     return (
         <Marker

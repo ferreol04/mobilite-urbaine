@@ -97,7 +97,6 @@ function ModalCategorie({ categorie, onClose, onSaved }) {
 function ModalTypeIncident({ type, categorieId, onClose, onSaved }) {
     const [form, setForm] = useState({
         name:                 type?.name ?? '',
-        icon:                 type?.icon ?? '',
         disappearance_mode:   type?.disappearance_mode ?? 'automatic',
         validity_duration:    type?.validity_duration ?? '',
     });
@@ -112,7 +111,6 @@ function ModalTypeIncident({ type, categorieId, onClose, onSaved }) {
         setLoading(true);
         const payload = {
             name:               form.name.trim(),
-            icon:               form.icon.trim() || null,
             disappearance_mode: form.disappearance_mode,
             category_id:        categorieId,
             validity_duration:  form.disappearance_mode === 'automatic' && form.validity_duration
@@ -143,12 +141,6 @@ function ModalTypeIncident({ type, categorieId, onClose, onSaved }) {
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Nom <span className="text-red-500">*</span></label>
                         <input type="text" value={form.name} onChange={(e) => setField('name', e.target.value)} autoFocus
-                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Icône (emoji ou code)</label>
-                        <input type="text" value={form.icon} onChange={(e) => setField('icon', e.target.value)}
-                            placeholder="ex: 🚗 ou car"
                             className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                     <div>
