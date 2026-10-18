@@ -38,11 +38,11 @@ export default function Connexion() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 flex">
+        <div className="min-h-screen bg-linear-to-br from-slate-900 via-[#182c47] to-slate-900 flex">
             {/* Colonne image (masquée sur mobile) */}
             <div className="hidden lg:block relative lg:w-1/2 xl:w-3/5">
                 <img
-                    src="https://images.pexels.com/photos/30726387/pexels-photo-30726387.jpeg?auto=compress&cs=tinysrgb&w=1600"
+                    src="/auth-bg.jpg"
                     alt="Rue animée avec circulation de motos en heure de pointe"
                     className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -57,7 +57,7 @@ export default function Connexion() {
                 </Link>
 
                 <div className="relative h-full flex flex-col justify-end p-10 xl:p-14">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/40 mb-5">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/20 mb-5">
                         <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
                         </svg>
@@ -75,7 +75,7 @@ export default function Connexion() {
             <div className="relative flex-1 flex items-center justify-center px-4 py-12">
                 {/* Fond décoratif */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl" />
                     <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
                 </div>
 
@@ -90,7 +90,7 @@ export default function Connexion() {
                 <div className="relative w-full max-w-md">
                     {/* Logo / En-tête (mobile uniquement) */}
                     <div className="lg:hidden text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/40 mb-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/20 mb-4">
                             <svg className="w-9 h-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
                             </svg>
@@ -102,7 +102,7 @@ export default function Connexion() {
                     {/* Carte */}
                     <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
                         <h2 className="text-xl font-semibold text-white mb-1">Connexion</h2>
-                        <p className="text-slate-400 text-sm mb-6">Connectez-vous pour signaler des incidents</p>
+                        <p className="text-slate-200 text-sm mb-6">Connectez-vous pour signaler des incidents</p>
 
                         {success && (
                             <div className="mb-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
@@ -198,7 +198,7 @@ export default function Connexion() {
                         </form>
 
                         <div className="mt-6 pt-6 border-t border-white/10 text-center">
-                            <p className="text-slate-400 text-sm">
+                            <p className="text-slate-200 text-sm">
                                 Pas encore de compte ?{' '}
                                 <Link to="/inscription" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
                                     Créer un compte
